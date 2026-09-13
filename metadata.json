@@ -1,0 +1,6 @@
+{
+  "name": "Investment OS Mobile",
+  "description": "Microsoft 생태계 및 PWA 기반 개인용 투자 관제 모바일 시스템: 레짐 진단, 포트폴리오 통합 실질노출, Trade Gatekeeper, SGOV 재투입 판정, 이벤트 관제",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

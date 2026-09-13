@@ -1,0 +1,12 @@
+{
+  "ACC-SEED-01": {
+    "accountId": "ACC-SEED-01",
+    "accountAlias": "삼성증권 284-****-102",
+    "institution": "삼성증권",
+    "accountType": "위탁",
+    "accountFingerprint": "b727868c5ec9b96a",
+    "currentSnapshotId": "SNAP-SEED-01",
+    "isActive": true,
+    "updatedAt": "2026-09-01T09:00:00Z"
+  }
+}

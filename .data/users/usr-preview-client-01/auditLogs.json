@@ -1,0 +1,35 @@
+[
+  {
+    "auditId": "AUDIT-1789213596977-575156",
+    "timestamp": "2026-09-12T11:46:36.977Z",
+    "action": "CREATE_IMPORT_JOB",
+    "userId": "usr-preview-client-01",
+    "details": {
+      "importJobId": "JOB-1789213596975-847081",
+      "classification": "DUPLICATE_IMAGE",
+      "discrepancyPass": true
+    }
+  },
+  {
+    "auditId": "AUDIT-1789213588142-a07668",
+    "timestamp": "2026-09-12T11:46:28.142Z",
+    "action": "CREATE_IMPORT_JOB",
+    "userId": "usr-preview-client-01",
+    "details": {
+      "importJobId": "JOB-1789213588140-52f720",
+      "classification": "DUPLICATE_IMAGE",
+      "discrepancyPass": true
+    }
+  },
+  {
+    "auditId": "AUDIT-1789213094278-44d02a",
+    "timestamp": "2026-09-12T11:38:14.278Z",
+    "action": "CREATE_IMPORT_JOB",
+    "userId": "usr-preview-client-01",
+    "details": {
+      "importJobId": "JOB-1789213094277-eb36c7",
+      "classification": "NEW_ACCOUNT",
+      "discrepancyPass": true
+    }
+  }
+]

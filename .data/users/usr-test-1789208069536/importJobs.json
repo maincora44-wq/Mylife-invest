@@ -1,0 +1,96 @@
+{
+  "JOB-TEST-1789208069547": {
+    "importJobId": "JOB-TEST-1789208069547",
+    "userId": "usr-test-1789208069536",
+    "createdAt": "2026-09-12T10:14:29.547Z",
+    "status": "PROVISIONAL",
+    "dataMode": "LIVE",
+    "accountFingerprint": "b2cc9c9e91d6d871",
+    "reviewedData": {
+      "brokerName": "미래에셋증권",
+      "accountType": "위탁",
+      "captureDate": "2026-09-12",
+      "currency": "KRW",
+      "totalAssetAmount": 100000000,
+      "cashBalance": 10000000,
+      "cashIncludedInHoldings": false,
+      "isAggregatorScreen": false,
+      "detectedAccountIdMasked": "512-****-890",
+      "holdings": [
+        {
+          "name": "S&P500 ETF",
+          "ticker": "VOO",
+          "quantity": 100,
+          "evalAmount": 90000000,
+          "costAmount": 85000000,
+          "pnlAmount": 5000000,
+          "pnlRate": 0.058,
+          "isPartial": false,
+          "confidence": 0.99,
+          "isCash": false
+        }
+      ]
+    },
+    "reconciliation": {
+      "discrepancyPass": true,
+      "discrepancy": 0,
+      "allowedTolerance": 10000,
+      "calculatedTotal": 100000000,
+      "stockSum": 90000000,
+      "effectiveCash": 10000000,
+      "hasPartialItems": false,
+      "requiresManualReview": false,
+      "auditNotes": [
+        "검산 0원 일치"
+      ]
+    },
+    "classification": "NEW_ACCOUNT"
+  },
+  "JOB-DEMO-1789208069549": {
+    "importJobId": "JOB-DEMO-1789208069549",
+    "userId": "usr-test-1789208069536",
+    "createdAt": "2026-09-12T10:14:29.547Z",
+    "status": "PROVISIONAL",
+    "dataMode": "DEMO",
+    "accountFingerprint": "b2cc9c9e91d6d871",
+    "reviewedData": {
+      "brokerName": "미래에셋증권",
+      "accountType": "위탁",
+      "captureDate": "2026-09-12",
+      "currency": "KRW",
+      "totalAssetAmount": 100000000,
+      "cashBalance": 10000000,
+      "cashIncludedInHoldings": false,
+      "isAggregatorScreen": false,
+      "detectedAccountIdMasked": "512-****-890",
+      "holdings": [
+        {
+          "name": "S&P500 ETF",
+          "ticker": "VOO",
+          "quantity": 100,
+          "evalAmount": 90000000,
+          "costAmount": 85000000,
+          "pnlAmount": 5000000,
+          "pnlRate": 0.058,
+          "isPartial": false,
+          "confidence": 0.99,
+          "isCash": false
+        }
+      ]
+    },
+    "reconciliation": {
+      "discrepancyPass": true,
+      "discrepancy": 0,
+      "allowedTolerance": 10000,
+      "calculatedTotal": 100000000,
+      "stockSum": 90000000,
+      "effectiveCash": 10000000,
+      "hasPartialItems": false,
+      "requiresManualReview": false,
+      "auditNotes": [
+        "검산 0원 일치"
+      ]
+    },
+    "classification": "NEW_ACCOUNT"
+  }
+}

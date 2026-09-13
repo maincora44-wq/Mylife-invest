@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PortfolioCaptureSchema",
+  "description": "증권계좌 캡처 이미지로부터 Gemini Structured Output을 통해 추출되는 표준 데이터 스키마",
+  "type": "object",
+  "properties": {
+    "brokerName": {
+      "type": "string",
+      "description": "식별된 증권사 또는 통합 앱 명칭 (예: 삼성증권, 미래에셋증권, 토스증권, 키움증권, KB증권, NH투자증권, 신한투자증권, Toss통합 등)"
+    },
+    "accountType": {
+      "type": "string",
+      "enum": ["위탁", "연금저축/IRP", "ISA", "CMA", "해외주식", "마이데이터_통합조회", "기타"],
+      "description": "계좌 유형"
+    },
+    "captureDate": {
+      "type": "string",
+      "description": "화면에서 감지된 기준 일시 (YYYY-MM-DD) 또는 미표시 시 null"
+    },
+    "currency": {
+      "type": "string",
+      "enum": ["KRW", "USD"],
+      "description": "표시 통화"
+    },
+    "totalAssetAmount": {
+      "type": "number",
+      "description": "화면 상단에 명시된 총 평가금액 또는 계좌 총자산 (숫자)"
+    },
+    "cashBalance": {
+      "type": "number",
+      "description": "화면에 표시된 예수금 또는 D+2 출금가능액 (미표시 시 0)"
+    },
+    "isAggregatorScreen": {
+      "type": "boolean",
+      "description": "Toss, 뱅크샐러드 등 여러 증권사 계좌가 합산된 마이데이터 통합 조회 화면인지 여부"
+    },
+    "detectedAccountIdMasked": {
+      "type": "string",
+      "description": "화면에 보이는 마스킹된 계좌번호 (예: 123-****-456, 개인식별정보 보호를 위해 전체 계좌번호 절대 저장 금지)"
+    },
+    "holdings": {
+      "type": "array",
+      "description": "화면에서 명확히 인식된 보유 종목 목록",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "화면에 적힌 종목명 (두 줄 나뉨 등 오류 방지)"
+          },
+          "ticker": {
+            "type": ["string", "null"],
+            "description": "종목코드(A005930 등) 또는 영문 티커(VOO 등), 없으면 null"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "보유 수량 (주식수)"
+          },
+          "evalAmount": {
+            "type": "number",
+            "description": "평가금액 (원 또는 달러)"
+          },
+          "costAmount": {
+            "type": "number",
+            "description": "매수금액 또는 투자원금 (원 또는 달러)"
+          },
+          "pnlAmount": {
+            "type": "number",
+            "description": "평가손익 (음수 부호 엄격 보존)"
+          },
+          "pnlRate": {
+            "type": "number",
+            "description": "수익률 (백분율 소수점 표기, 예: -0.042는 -4.2%)"
+          },
+          "isPartial": {
+            "type": "boolean",
+            "description": "화면 하단 또는 상단에 잘려 일부 숫자만 보이는 불완전 항목 여부"
+          },
+          "confidence": {
+            "type": "number",
+            "description": "인식 신뢰도 점수 (0.00 ~ 1.00)"
+          }
+        },
+        "required": ["name", "quantity", "evalAmount", "costAmount", "pnlAmount", "pnlRate", "isPartial", "confidence"]
+      }
+    },
+    "calculatedSumEval": {
+      "type": "number",
+      "description": "추출된 종목들의 evalAmount 합계"
+    },
+    "discrepancy": {
+      "type": "number",
+      "description": "화면 총자산(totalAssetAmount)과 (calculatedSumEval + cashBalance) 간의 차액"
+    },
+    "discrepancyPass": {
+      "type": "boolean",
+      "description": "차액이 max(1,000원, 총자산의 0.01%) 이내로 검산 통과했는지 여부"
+    },
+    "requiresManualReview": {
+      "type": "boolean",
+      "description": "검산 불일치, 신뢰도 0.95 미만 필드, 또는 부분 잘림 종목이 있어 수동 검수가 필요한지 여부"
+    },
+    "auditNotes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "검산 및 추출 과정에서 발생한 주의사항 목록"
+    }
+  },
+  "required": [
+    "brokerName",
+    "accountType",
+    "currency",
+    "totalAssetAmount",
+    "cashBalance",
+    "isAggregatorScreen",
+    "holdings",
+    "calculatedSumEval",
+    "discrepancy",
+    "discrepancyPass",
+    "requiresManualReview"
+  ]
+}
