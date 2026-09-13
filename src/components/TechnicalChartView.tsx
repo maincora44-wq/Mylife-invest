@@ -236,15 +236,13 @@ export const TechnicalChartView: React.FC<TechnicalChartViewProps> = ({
   };
 
   const handleRemoveCustomTicker = (tickerToRemove: string) => {
-    if (window.confirm(`'${tickerToRemove}' 종목을 목록에서 삭제하시겠습니까?`)) {
-      if (provider.removeCustomAsset) {
-        provider.removeCustomAsset(tickerToRemove);
-      }
-      fetch(`/api/technical/assets/${tickerToRemove}`, { method: "DELETE" }).catch(() => {});
-      setAssetsVersion((v) => v + 1);
-      if (selectedTicker === tickerToRemove) {
-        setSelectedTicker("VOO");
-      }
+    if (provider.removeCustomAsset) {
+      provider.removeCustomAsset(tickerToRemove);
+    }
+    fetch(`/api/technical/assets/${tickerToRemove}`, { method: "DELETE" }).catch(() => {});
+    setAssetsVersion((v) => v + 1);
+    if (selectedTicker === tickerToRemove) {
+      setSelectedTicker("VOO");
     }
   };
 

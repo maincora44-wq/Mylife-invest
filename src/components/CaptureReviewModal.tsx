@@ -121,7 +121,7 @@ export const CaptureReviewModal: React.FC<CaptureReviewModalProps> = ({
           fileName: file.name,
         };
       } else {
-        alert("분석할 캡처 이미지를 먼저 선택해주세요.");
+        setCommitError("분석할 캡처 이미지를 먼저 선택해주세요.");
         setIsLoading(false);
         return;
       }

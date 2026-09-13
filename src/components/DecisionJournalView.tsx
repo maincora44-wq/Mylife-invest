@@ -43,9 +43,11 @@ export const DecisionJournalView: React.FC<DecisionJournalViewProps> = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ entries }),
       });
-      const data = await resp.json();
-      if (data.analysis) {
-        setCopilotSummary(data.analysis);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.analysis) {
+          setCopilotSummary(data.analysis);
+        }
       }
     } catch (e) {
       console.error(e);

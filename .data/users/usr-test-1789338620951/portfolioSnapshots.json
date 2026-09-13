@@ -1,0 +1,91 @@
+[
+  {
+    "snapshotId": "SNAP-NEW-1789338620984",
+    "accountId": "ACC-TEST-01",
+    "approvedAt": "2026-09-13T22:30:20.984Z",
+    "asOfDate": "2026-09-12",
+    "captureDate": "2026-09-12",
+    "brokerName": "미래에셋증권",
+    "accountType": "위탁",
+    "detectedAccountIdMasked": "512-****-890",
+    "totalAssetAmount": 100000000,
+    "cashBalance": 10000000,
+    "holdingsCount": 1,
+    "dataStatus": "CONFIRMED",
+    "holdings": [
+      {
+        "name": "S&P500 ETF",
+        "ticker": "VOO",
+        "quantity": 100,
+        "evalAmount": 90000000,
+        "costAmount": 85000000,
+        "pnlAmount": 5000000,
+        "pnlRate": 0.058,
+        "isPartial": false,
+        "confidence": 0.99,
+        "isCash": false
+      }
+    ]
+  },
+  {
+    "snapshotId": "SNAP-SEED-01",
+    "accountId": "ACC-SEED-01",
+    "approvedAt": "2026-09-01T09:00:00Z",
+    "asOfDate": "2026-09-01",
+    "captureDate": "2026-09-01",
+    "brokerName": "삼성증권",
+    "accountType": "위탁",
+    "detectedAccountIdMasked": "284-****-102",
+    "totalAssetAmount": 236000000,
+    "cashBalance": 15000000,
+    "holdingsCount": 3,
+    "dataStatus": "CONFIRMED",
+    "holdings": [
+      {
+        "name": "Alphabet Inc Class A",
+        "ticker": "GOOGL",
+        "quantity": 180,
+        "evalAmount": 49455000,
+        "costAmount": 38000000,
+        "pnlAmount": 11455000,
+        "pnlRate": 0.301,
+        "isPartial": false,
+        "confidence": 0.98
+      },
+      {
+        "name": "Invesco QQQ Trust",
+        "ticker": "QQQ",
+        "quantity": 110,
+        "evalAmount": 76005000,
+        "costAmount": 68000000,
+        "pnlAmount": 8005000,
+        "pnlRate": 0.117,
+        "isPartial": false,
+        "confidence": 0.99
+      },
+      {
+        "name": "Vanguard S&P 500 ETF",
+        "ticker": "VOO",
+        "quantity": 110,
+        "evalAmount": 95540000,
+        "costAmount": 88000000,
+        "pnlAmount": 7540000,
+        "pnlRate": 0.085,
+        "isPartial": false,
+        "confidence": 0.99
+      },
+      {
+        "name": "원화 예수금",
+        "ticker": null,
+        "quantity": 1,
+        "evalAmount": 15000000,
+        "costAmount": 15000000,
+        "pnlAmount": 0,
+        "pnlRate": 0,
+        "isPartial": false,
+        "confidence": 1,
+        "isCash": true
+      }
+    ]
+  }
+]

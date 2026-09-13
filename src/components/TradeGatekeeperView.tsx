@@ -189,9 +189,11 @@ export const TradeGatekeeperView: React.FC<TradeGatekeeperViewProps> = ({
           currentRegime: currentRegimeState.regime,
         }),
       });
-      const data = await resp.json();
-      if (data.aiReasoning) {
-        setCopilotFeedback(data.aiReasoning);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.aiReasoning) {
+          setCopilotFeedback(data.aiReasoning);
+        }
       }
     } catch (e) {
       console.error("Copilot fetch failed:", e);

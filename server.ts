@@ -1456,9 +1456,19 @@ app.get("/api/technical/market-aggregate", (_req, res) => {
   return res.json(aggregate);
 });
 
+// 404 handler for all unmatched API routes (prevents returning HTML to fetch calls)
+app.all("/api/*", (_req, res) => {
+  res.status(404).json({ error: "NOT_FOUND", message: "API endpoint not found" });
+});
+
 // Vite middleware setup
 async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
+  const isProduction =
+    process.env.NODE_ENV === "production" ||
+    Boolean(process.argv[1]?.includes("dist")) ||
+    process.env.npm_lifecycle_event === "start";
+
+  if (!isProduction) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -1473,11 +1483,15 @@ async function startServer() {
   }
 
   // Initialize and start the Daily Check scheduler
-  schedulerService.setAIClient(getGeminiAI());
-  schedulerService.start();
+  try {
+    schedulerService.setAIClient(getGeminiAI());
+    schedulerService.start();
+  } catch (schedErr) {
+    console.warn("[Scheduler] Warning during startup:", schedErr);
+  }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[Investment OS Production-Hardened Engine] Server running on http://0.0.0.0:${PORT}`);
+    console.log(`[Investment OS Production-Hardened Engine] Server running on http://0.0.0.0:${PORT} (isProduction=${isProduction})`);
   });
 }
 
