@@ -389,6 +389,11 @@ export default function App() {
                   setActiveTab("gatekeeper");
                 }}
                 onOpenCaptureModal={() => setIsCaptureModalOpen(true)}
+                onAddHolding={(newHolding) => {
+                  setHoldings((prev) => [newHolding, ...prev]);
+                  setToastMessage(`✨ '${newHolding.assetName} (${newHolding.ticker})' 종목이 포트폴리오에 성공적으로 추가되었습니다.`);
+                  setTimeout(() => setToastMessage(null), 3500);
+                }}
               />
             )}
 

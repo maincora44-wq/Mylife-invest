@@ -13,22 +13,40 @@ import {
   Search,
   CheckCircle,
   Eye,
-  Camera
+  Camera,
+  Plus,
+  X,
+  PlusCircle,
+  Briefcase
 } from "lucide-react";
 
 interface PortfolioViewProps {
   holdings: PortfolioHolding[];
   onInspectTicker: (ticker: string) => void;
   onOpenCaptureModal?: () => void;
+  onAddHolding?: (newHolding: PortfolioHolding) => void;
 }
 
 export const PortfolioView: React.FC<PortfolioViewProps> = ({
   holdings,
   onInspectTicker,
   onOpenCaptureModal,
+  onAddHolding,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<"buckets" | "holdings" | "accounts">("buckets");
   const [filterAccount, setFilterAccount] = useState<string>("ALL");
+
+  // Modal State for Direct Holding Addition
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [formTicker, setFormTicker] = useState("");
+  const [formAssetName, setFormAssetName] = useState("");
+  const [formQuantity, setFormQuantity] = useState("");
+  const [formPrice, setFormPrice] = useState("");
+  const [formCurrency, setFormCurrency] = useState<"USD" | "KRW">("USD");
+  const [formAccount, setFormAccount] = useState("메인 위탁계좌");
+  const [formAssetClass, setFormAssetClass] = useState<PortfolioHolding["assetClass"]>("주식");
+  const [formRiskBucket, setFormRiskBucket] = useState<PortfolioHolding["riskBucket"]>("AI·성장");
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Calculations
   const totalMarketValue = holdings.reduce((sum, h) => sum + h.marketValueKRW, 0);
@@ -154,10 +172,90 @@ export const PortfolioView: React.FC<PortfolioViewProps> = ({
     ? holdings
     : holdings.filter((h) => h.account === filterAccount);
 
+  const handleAddHoldingSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanTicker = formTicker.trim().toUpperCase();
+    const cleanName = formAssetName.trim();
+    const parsedQty = parseFloat(formQuantity);
+    const parsedPrice = parseFloat(formPrice);
+
+    if (!cleanTicker) {
+      setFormError("Ticker(종목코드)를 입력해주세요. (예: AAPL, NVDA, 005930)");
+      return;
+    }
+    if (!cleanName) {
+      setFormError("종목명을 입력해주세요. (예: Apple, 엔비디아, 삼성전자)");
+      return;
+    }
+    if (isNaN(parsedQty) || parsedQty <= 0) {
+      setFormError("수량은 0보다 큰 유효한 숫자를 입력해주세요.");
+      return;
+    }
+    if (isNaN(parsedPrice) || parsedPrice <= 0) {
+      setFormError("매수단가는 0보다 큰 유효한 금액을 입력해주세요.");
+      return;
+    }
+
+    const currentFx = formCurrency === "USD" ? 1370 : 1;
+    const calcMarketVal = Math.round(parsedQty * parsedPrice * currentFx);
+
+    const newHolding: PortfolioHolding = {
+      holdingId: `H-MANUAL-${Date.now()}`,
+      asOfDate: new Date().toISOString().split("T")[0],
+      account: formAccount,
+      accountType: formAccount.includes("연금")
+        ? "연금저축"
+        : formAccount.includes("비과세")
+        ? "ISA"
+        : "위탁",
+      ticker: cleanTicker,
+      assetName: cleanName,
+      quantity: parsedQty,
+      price: parsedPrice,
+      currency: formCurrency,
+      fxRate: currentFx,
+      marketValueKRW: calcMarketVal,
+      costKRW: calcMarketVal,
+      assetClass: formAssetClass,
+      sector:
+        formAssetClass === "주식"
+          ? "Growth / Equity"
+          : formAssetClass === "금"
+          ? "Commodity / Gold"
+          : formAssetClass === "채권·현금"
+          ? "Fixed Income / Cash"
+          : "Restricted",
+      riskBucket: formRiskBucket,
+      tradable: formAssetClass !== "제한자산",
+      restricted: formAssetClass === "제한자산",
+      taxConstraint:
+        formCurrency === "USD"
+          ? "해외주식 양도소득세 (기본공제 한도 내 관리)"
+          : formAccount.includes("연금")
+          ? "연금소득세 과세이연"
+          : "국내 일반과세",
+    };
+
+    if (onAddHolding) {
+      onAddHolding(newHolding);
+    }
+
+    // Switch to holdings ledger tab and close modal
+    setActiveSubTab("holdings");
+    setIsAddModalOpen(false);
+
+    // Reset fields
+    setFormTicker("");
+    setFormAssetName("");
+    setFormQuantity("");
+    setFormPrice("");
+    setFormError(null);
+  };
+
   return (
     <div className="space-y-4 pb-12">
       {/* Header */}
-      <div className="flex items-center justify-between px-1 gap-2">
+      <div className="flex items-center justify-between px-1 gap-2 flex-wrap">
         <div>
           <h1 className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
             <span>포트폴리오 통합 관제</span>
@@ -170,15 +268,29 @@ export const PortfolioView: React.FC<PortfolioViewProps> = ({
           </p>
         </div>
 
-        {onOpenCaptureModal && (
+        <div className="flex items-center gap-2 shrink-0">
           <button
-            onClick={onOpenCaptureModal}
-            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm shrink-0"
+            id="btn-open-add-holding"
+            onClick={() => {
+              setFormError(null);
+              setIsAddModalOpen(true);
+            }}
+            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
           >
-            <Camera className="w-3.5 h-3.5" />
-            <span>캡처 OCR 검수</span>
+            <Plus className="w-3.5 h-3.5" />
+            <span>종목 직접 추가</span>
           </button>
-        )}
+
+          {onOpenCaptureModal && (
+            <button
+              onClick={onOpenCaptureModal}
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm shrink-0"
+            >
+              <Camera className="w-3.5 h-3.5" />
+              <span>캡처 OCR 검수</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Top Asset Summary Cards */}
@@ -313,21 +425,35 @@ export const PortfolioView: React.FC<PortfolioViewProps> = ({
       {/* Sub Tab 2: Holdings Ledger */}
       {activeSubTab === "holdings" && (
         <div className="space-y-3">
-          {/* Account Filter */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-            {["ALL", "메인 위탁계좌", "연금저축/IRP", "국내 비과세/장기", "CMA / 원화예수금"].map((acc) => (
-              <button
-                key={acc}
-                onClick={() => setFilterAccount(acc)}
-                className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                  filterAccount === acc
-                    ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900"
-                    : "bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200"
-                }`}
-              >
-                {acc}
-              </button>
-            ))}
+          {/* Account Filter and Quick Add */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+              {["ALL", "메인 위탁계좌", "연금저축/IRP", "국내 비과세/장기", "CMA / 원화예수금"].map((acc) => (
+                <button
+                  key={acc}
+                  onClick={() => setFilterAccount(acc)}
+                  className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                    filterAccount === acc
+                      ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900"
+                      : "bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200"
+                  }`}
+                >
+                  {acc}
+                </button>
+              ))}
+            </div>
+
+            <button
+              id="btn-quick-add-holding-tab"
+              onClick={() => {
+                setFormError(null);
+                setIsAddModalOpen(true);
+              }}
+              className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-800 rounded-lg text-xs font-bold flex items-center gap-1 shrink-0 transition-colors"
+            >
+              <Plus className="w-3 h-3" />
+              <span>종목 추가</span>
+            </button>
           </div>
 
           <div className="space-y-2">
@@ -397,6 +523,241 @@ export const PortfolioView: React.FC<PortfolioViewProps> = ({
           </li>
         </ul>
       </div>
+
+      {/* 종목 직접 추가 모달 */}
+      {isAddModalOpen && (
+        <div
+          id="modal-add-holding-backdrop"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsAddModalOpen(false);
+          }}
+        >
+          <div
+            id="modal-add-holding-container"
+            className="w-full max-w-md bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-xl overflow-hidden"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <PlusCircle className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                    종목 직접 추가
+                  </h2>
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                    보유 원장에 신규 자산 종목을 즉시 등록합니다
+                  </p>
+                </div>
+              </div>
+              <button
+                id="btn-close-add-holding"
+                onClick={() => setIsAddModalOpen(false)}
+                className="p-1.5 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleAddHoldingSubmit} className="p-5 space-y-4">
+              {formError && (
+                <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
+
+              {/* Ticker & Name */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label htmlFor="input-holding-ticker" className="block text-xs font-semibold text-stone-700 dark:text-stone-300">
+                    Ticker (종목코드) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    id="input-holding-ticker"
+                    type="text"
+                    value={formTicker}
+                    onChange={(e) => setFormTicker(e.target.value.toUpperCase())}
+                    placeholder="예: AAPL, NVDA"
+                    className="w-full px-3 py-2 text-xs font-mono font-bold uppercase rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                    autoFocus
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label htmlFor="input-holding-name" className="block text-xs font-semibold text-stone-700 dark:text-stone-300">
+                    종목명 <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    id="input-holding-name"
+                    type="text"
+                    value={formAssetName}
+                    onChange={(e) => setFormAssetName(e.target.value)}
+                    placeholder="예: Apple Inc., 엔비디아"
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Currency Selector */}
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300">
+                  결제 통화
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormCurrency("USD")}
+                    className={`py-1.5 px-3 rounded-lg text-xs font-semibold border transition-all ${
+                      formCurrency === "USD"
+                        ? "bg-blue-50 dark:bg-blue-950/50 border-blue-500 text-blue-700 dark:text-blue-300"
+                        : "border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400"
+                    }`}
+                  >
+                    USD (미국 달러 · 1,370원)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormCurrency("KRW")}
+                    className={`py-1.5 px-3 rounded-lg text-xs font-semibold border transition-all ${
+                      formCurrency === "KRW"
+                        ? "bg-blue-50 dark:bg-blue-950/50 border-blue-500 text-blue-700 dark:text-blue-300"
+                        : "border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400"
+                    }`}
+                  >
+                    KRW (대한민국 원화)
+                  </button>
+                </div>
+              </div>
+
+              {/* Quantity & Buy Price */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label htmlFor="input-holding-qty" className="block text-xs font-semibold text-stone-700 dark:text-stone-300">
+                    보유 수량 <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    id="input-holding-qty"
+                    type="number"
+                    step="any"
+                    min="0"
+                    value={formQuantity}
+                    onChange={(e) => setFormQuantity(e.target.value)}
+                    placeholder="예: 10"
+                    className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label htmlFor="input-holding-price" className="block text-xs font-semibold text-stone-700 dark:text-stone-300">
+                    매수단가 ({formCurrency}) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    id="input-holding-price"
+                    type="number"
+                    step="any"
+                    min="0"
+                    value={formPrice}
+                    onChange={(e) => setFormPrice(e.target.value)}
+                    placeholder={formCurrency === "USD" ? "예: 225.50" : "예: 72000"}
+                    className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Account & Risk Bucket Selection */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label htmlFor="select-holding-account" className="block text-xs font-semibold text-stone-700 dark:text-stone-300">
+                    보유 계좌
+                  </label>
+                  <select
+                    id="select-holding-account"
+                    value={formAccount}
+                    onChange={(e) => setFormAccount(e.target.value)}
+                    className="w-full px-2.5 py-2 text-xs rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value="메인 위탁계좌">메인 위탁계좌</option>
+                    <option value="연금저축/IRP">연금저축/IRP</option>
+                    <option value="국내 비과세/장기">국내 비과세/장기</option>
+                    <option value="CMA / 원화예수금">CMA / 원화예수금</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label htmlFor="select-holding-bucket" className="block text-xs font-semibold text-stone-700 dark:text-stone-300">
+                    위험 묶음 (Bucket)
+                  </label>
+                  <select
+                    id="select-holding-bucket"
+                    value={formRiskBucket}
+                    onChange={(e) => setFormRiskBucket(e.target.value as PortfolioHolding["riskBucket"])}
+                    className="w-full px-2.5 py-2 text-xs rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value="AI·성장">AI·성장</option>
+                    <option value="반도체">반도체</option>
+                    <option value="Nasdaq100">Nasdaq100</option>
+                    <option value="광범위 미국주식">광범위 미국주식</option>
+                    <option value="금">금</option>
+                    <option value="현금성·SGOV">현금성·SGOV</option>
+                    <option value="GOOG 직접/간접">GOOG 직접/간접</option>
+                    <option value="KT&G 제한">KT&G 제한</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Real-time Calculation Summary Card */}
+              {parseFloat(formQuantity) > 0 && parseFloat(formPrice) > 0 && (
+                <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700/80 space-y-1 text-xs">
+                  <div className="flex justify-between text-stone-600 dark:text-stone-400">
+                    <span>원화 환산 평가금액:</span>
+                    <span className="font-mono font-bold text-stone-900 dark:text-stone-100">
+                      {formatKRW(
+                        Math.round(
+                          parseFloat(formQuantity) *
+                            parseFloat(formPrice) *
+                            (formCurrency === "USD" ? 1370 : 1)
+                        )
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-[11px] text-stone-500 dark:text-stone-400">
+                    <span>외화 금액:</span>
+                    <span className="font-mono">
+                      {formCurrency === "USD" ? "$" : ""}
+                      {(parseFloat(formQuantity) * parseFloat(formPrice)).toLocaleString()}
+                      {formCurrency === "KRW" ? " 원" : ""}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Form Buttons */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
+                <button
+                  type="button"
+                  id="btn-cancel-add-holding"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  id="btn-submit-add-holding"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>원장에 즉시 추가</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
